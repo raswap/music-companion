@@ -1,0 +1,159 @@
+.app {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1rem 16px 2rem;
+  display: grid;
+  gap: 1.25rem;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 1.6rem;
+  letter-spacing: 0.02em;
+}
+.subtitle {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+}
+
+.feedback {
+  display: grid;
+  gap: 1rem;
+}
+
+.swara-display {
+  text-align: center;
+  padding: 1.25rem 1rem 0.75rem;
+  border-radius: 16px;
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+.swara-name {
+  font-size: clamp(3.5rem, 14vw, 6rem);
+  font-weight: 600;
+  line-height: 1;
+}
+.swara-meta {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+.swara-display.in-tune {
+  border-color: var(--green);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--green) 35%, transparent);
+}
+.swara-display.in-tune .swara-name {
+  color: var(--green);
+}
+.swara-display.slightly-off {
+  border-color: var(--amber);
+}
+.swara-display.slightly-off .swara-name,
+.swara-display.off .swara-name {
+  color: var(--amber);
+}
+.swara-display.out-of-raga {
+  border-color: var(--red);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--red) 35%, transparent);
+}
+.swara-display.out-of-raga .swara-name {
+  color: var(--red);
+}
+
+.cents-meter svg {
+  display: block;
+  width: 100%;
+  height: 40px;
+}
+.meter-track {
+  fill: var(--panel-border);
+}
+.meter-zone {
+  fill: color-mix(in srgb, var(--green) 30%, transparent);
+}
+.meter-centre {
+  stroke: var(--muted);
+  stroke-width: 0.6;
+}
+.meter-needle {
+  stroke: var(--text);
+  stroke-width: 1.2;
+}
+.cents-meter.in-tune .meter-needle {
+  stroke: var(--green);
+}
+.cents-meter.slightly-off .meter-needle,
+.cents-meter.off .meter-needle {
+  stroke: var(--amber);
+}
+.cents-meter.out-of-raga .meter-needle {
+  stroke: var(--red);
+}
+.meter-labels {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.raga-alert {
+  padding: 0.6rem 0.9rem;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  border: 1px solid var(--panel-border);
+  background: var(--panel);
+}
+.raga-alert.warn {
+  border-color: var(--red);
+  background: color-mix(in srgb, var(--red) 15%, var(--panel));
+}
+
+.pitch-tape {
+  display: block;
+  width: 100%;
+  height: 220px;
+  border-radius: 12px;
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+}
+
+.controls {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.panel {
+  display: grid;
+  gap: 0.8rem;
+  padding: 1rem;
+  border-radius: 16px;
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+}
+.panel h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--accent);
+}
+
+.row {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.row.between {
+  justify-content: space-between;
+}
+
+.app-footer {
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-align: center;
+}
