@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
 import { CentsMeter } from './components/CentsMeter'
+import { InputLevel } from './components/InputLevel'
 import { PitchTape } from './components/PitchTape'
 import { RagaAlert } from './components/RagaAlert'
 import { SaSelector } from './components/SaSelector'
@@ -56,8 +57,9 @@ export default function App() {
           <button type="button" className={pitch.listening ? 'active' : ''} onClick={pitch.listening ? pitch.stop : pitch.start}>
             {pitch.listening ? 'Stop listening' : 'Start listening'}
           </button>
-          {pitch.error && <span className="error">{pitch.error}</span>}
+          {pitch.listening && <InputLevel level={pitch.level} />}
         </div>
+        {pitch.error && <p className="error">{pitch.error}</p>}
       </section>
 
       <div className="controls">

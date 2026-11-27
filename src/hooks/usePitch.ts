@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ensureAudioRunning, isMicrophoneSupported } from '../audio/audio-context'
 import { MicrophoneInput } from '../audio/mic'
-import { PitchDetector } from '../audio/pitch-detector'
+import { PitchDetector, rootMeanSquare } from '../audio/pitch-detector'
 import { frequencyToSwara, type SwaraReading } from '../music/swaras'
 
 const FRAME_SIZE = 2048
@@ -18,6 +18,8 @@ export interface PitchPoint {
 export interface PitchState {
   listening: boolean
   error: string | null
+  /** Input level 0..1 (RMS), updated while listening even when no pitch is found. */
+  level: number
   /** Latest reading, or null when silent / unvoiced. */
   reading: SwaraReading | null
   /** Ring of recent points for the scrolling tape, oldest first. */
@@ -33,6 +35,7 @@ export function usePitch(saHz: number) {
   const [error, setError] = useState<string | null>(null)
   const [reading, setReading] = useState<SwaraReading | null>(null)
   const [history, setHistory] = useState<readonly PitchPoint[]>([])
+  const [level, setLevel] = useState(0)
 
   const micRef = useRef<MicrophoneInput | null>(null)
   const detectorRef = useRef<PitchDetector | null>(null)
@@ -53,6 +56,7 @@ export function usePitch(saHz: number) {
       detectorRef.current ??= new PitchDetector(FRAME_SIZE)
       const mic = new MicrophoneInput(ctx, { frameSize: FRAME_SIZE, hopSize: HOP_SIZE })
       await mic.start((frame, sampleRate) => {
+        setLevel(rootMeanSquare(frame))
         const estimate = detectorRef.current!.detect(frame, sampleRate)
         const next = estimate ? frequencyToSwara(estimate.frequency, saRef.current) : null
         const now = performance.now()
@@ -78,12 +82,13 @@ export function usePitch(saHz: number) {
     historyRef.current = []
     setHistory([])
     setReading(null)
+    setLevel(0)
     setListening(false)
   }, [])
 
   useEffect(() => () => micRef.current?.stop(), [])
 
-  return { listening, error, reading, history, start, stop } satisfies PitchState & {
+  return { listening, error, level, reading, history, start, stop } satisfies PitchState & {
     start: () => Promise<void>
     stop: () => void
   }

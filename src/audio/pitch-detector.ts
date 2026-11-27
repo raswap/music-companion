@@ -20,8 +20,8 @@ export interface PitchDetectorOptions {
 }
 
 export const DEFAULT_PITCH_OPTIONS: PitchDetectorOptions = {
-  minClarity: 0.9,
-  minRms: 0.01,
+  minClarity: 0.85,
+  minRms: 0.005,
   minFrequency: 60,
   maxFrequency: 1200,
 }

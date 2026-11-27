@@ -26,6 +26,23 @@ const DEFAULT_OPTIONS: MicrophoneOptions = {
  * No audio is sent anywhere; the worklet output is muted and used only to
  * keep the node alive in the graph.
  */
+/** Turn a getUserMedia rejection into something a singer can act on. */
+export function describeMicrophoneError(err: unknown): string {
+  const name = err instanceof DOMException ? err.name : ''
+  switch (name) {
+    case 'NotAllowedError':
+    case 'SecurityError':
+      return 'Microphone access was blocked. Allow the microphone for this site in the browser address bar, then try again.'
+    case 'NotFoundError':
+    case 'OverconstrainedError':
+      return 'No microphone was found. Check that one is connected and selected as the input device.'
+    case 'NotReadableError':
+      return 'The microphone is in use by another app or could not be opened. Close other apps using it and try again.'
+    default:
+      return `Could not open the microphone: ${err instanceof Error ? err.message : String(err)}`
+  }
+}
+
 export class MicrophoneInput {
   private stream: MediaStream | null = null
   private source: MediaStreamAudioSourceNode | null = null
@@ -47,15 +64,29 @@ export class MicrophoneInput {
   async start(onFrame: FrameHandler): Promise<void> {
     if (this.worklet) return
 
+    if (typeof window !== 'undefined' && !window.isSecureContext) {
+      throw new Error(
+        'The microphone only works on a secure page. Open the app at http://localhost, or over https. ' +
+          `This page was opened at ${window.location.origin}.`,
+      )
+    }
+    if (!this.ctx.audioWorklet) {
+      throw new Error('This browser does not support AudioWorklet, which the microphone capture needs.')
+    }
+
     if (!MicrophoneInput.moduleLoaded.has(this.ctx)) {
       await this.ctx.audioWorklet.addModule(captureProcessorUrl)
       MicrophoneInput.moduleLoaded.add(this.ctx)
     }
 
-    this.stream = await navigator.mediaDevices.getUserMedia({
-      audio: { ...DEFAULT_OPTIONS.constraints, ...this.options.constraints },
-      video: false,
-    })
+    try {
+      this.stream = await navigator.mediaDevices.getUserMedia({
+        audio: { ...DEFAULT_OPTIONS.constraints, ...this.options.constraints },
+        video: false,
+      })
+    } catch (err) {
+      throw new Error(describeMicrophoneError(err))
+    }
 
     this.source = this.ctx.createMediaStreamSource(this.stream)
     this.worklet = new AudioWorkletNode(this.ctx, 'capture-processor', {
