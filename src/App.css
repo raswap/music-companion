@@ -6,6 +6,16 @@
   gap: 1.25rem;
 }
 
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.raga-selector {
+  min-width: 200px;
+}
 .app-header h1 {
   margin: 0;
   font-size: 1.6rem;

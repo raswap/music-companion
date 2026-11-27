@@ -5,19 +5,37 @@ import { InputLevel } from './components/InputLevel'
 import { MicSelector } from './components/MicSelector'
 import { PitchTape } from './components/PitchTape'
 import { RagaAlert } from './components/RagaAlert'
+import { RagaSelector } from './components/RagaSelector'
 import { SaSelector } from './components/SaSelector'
 import { SwaraDisplay } from './components/SwaraDisplay'
 import { TanpuraControls } from './components/TanpuraControls'
 import { usePitch } from './hooks/usePitch'
 import { DEFAULT_TANPURA, useTanpura, type TanpuraSettings } from './hooks/useTanpura'
 import { NoteStabilizer } from './music/note-stabilizer'
-import { YAMAN, classify, isAllowed } from './music/ragas'
+import { YAMAN, classify, isAllowed, ragaById, type Raga } from './music/ragas'
 import { DEFAULT_SA, saToHz, type SaSetting } from './music/sa'
 import type { SwaraId } from './music/swaras'
 
-const raga = YAMAN
+const RAGA_STORAGE_KEY = 'music-companion.raga'
+
+function loadSavedRaga(): Raga {
+  try {
+    return ragaById(localStorage.getItem(RAGA_STORAGE_KEY) ?? '') ?? YAMAN
+  } catch {
+    return YAMAN
+  }
+}
 
 export default function App() {
+  const [raga, setRagaState] = useState<Raga>(loadSavedRaga)
+  const setRaga = (next: Raga) => {
+    setRagaState(next)
+    try {
+      localStorage.setItem(RAGA_STORAGE_KEY, next.id)
+    } catch {
+      /* selection lasts for this page load */
+    }
+  }
   const [sa, setSa] = useState<SaSetting>(DEFAULT_SA)
   const [tanpuraSettings, setTanpuraSettings] = useState<TanpuraSettings>(DEFAULT_TANPURA)
   const saHz = useMemo(() => saToHz(sa), [sa])
@@ -40,13 +58,22 @@ export default function App() {
     if (confirmed || !held) {
       setVarjit(held && !isAllowed(raga, held.swara) ? held.swara : null)
     }
-  }, [pitch.reading])
+  }, [pitch.reading, raga])
+
+  // A new raga changes what counts as varjit; re-evaluate the held note.
+  useEffect(() => {
+    const held = stabilizer.current.current
+    setVarjit(held && !isAllowed(raga, held.swara) ? held.swara : null)
+  }, [raga])
 
   return (
     <main className="app">
       <header className="app-header">
-        <h1>Music Companion</h1>
-        <p className="subtitle">Raga {raga.name} · practice with tanpura and live swara feedback</p>
+        <div>
+          <h1>Music Companion</h1>
+          <p className="subtitle">Practice with tanpura and live swara feedback</p>
+        </div>
+        <RagaSelector raga={raga} onChange={setRaga} />
       </header>
 
       <section className="feedback">

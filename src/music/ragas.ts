@@ -36,7 +36,31 @@ export const YAMAN: Raga = {
   },
 }
 
-export const RAGAS: readonly Raga[] = [YAMAN]
+export const TODI: Raga = {
+  id: 'todi',
+  name: 'Todi',
+  thaat: 'Todi',
+  allowed: ['S', 'r', 'g', 'M', 'P', 'd', 'N'],
+  aroha: ['S', 'r', 'g', 'M', 'd', 'N', 'S'],
+  avaroha: ['S', 'N', 'd', 'P', 'M', 'g', 'r', 'S'],
+  vadi: 'd',
+  samvadi: 'g',
+  description:
+    'Komal Re, Ga and Dha with tivra Ma and shuddh Ni. Late-morning raga of the Todi thaat (Miyan ki Todi).',
+  hints: {
+    R: 'Shuddh Re is varjit in Todi. Use komal Re (Re♭).',
+    G: 'Shuddh Ga is varjit in Todi. Use komal Ga (Ga♭).',
+    m: 'Shuddh Ma is varjit in Todi. Use tivra Ma (Ma♯).',
+    D: 'Shuddh Dha is varjit in Todi. Use komal Dha (Dha♭).',
+    n: 'Komal Ni is varjit in Todi. Use shuddh Ni.',
+  },
+}
+
+export const RAGAS: readonly Raga[] = [YAMAN, TODI]
+
+export function ragaById(id: string): Raga | undefined {
+  return RAGAS.find((r) => r.id === id)
+}
 
 export function isAllowed(raga: Raga, swara: SwaraId): boolean {
   return raga.allowed.includes(swara)

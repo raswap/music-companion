@@ -4,7 +4,7 @@ A browser-based practice companion for Hindustani classical vocal students.
 It plays a tanpura drone at your chosen Sa, listens through the microphone,
 detects the swara you are singing in real time, shows how far you are from
 the ideal pitch in cents, and warns when you sing a note that is varjit
-(forbidden) in the raga. The proof of concept supports raga Yaman.
+(forbidden) in the raga. The proof of concept supports ragas Yaman and Todi.
 
 See [docs/PRD.md](docs/PRD.md) for the full product requirements.
 
