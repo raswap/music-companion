@@ -1,0 +1,48 @@
+# Tanpura samples
+
+Drop recorded tanpura loops here and register them in `src/hooks/useTanpura.ts`
+(`TANPURA_SAMPLES`). Each entry needs the file URL and the frequency of Sa as
+recorded, for example:
+
+```ts
+export const TANPURA_SAMPLES = [
+  { url: '/tanpura/c-sharp.ogg', saHz: 138.59 },
+  { url: '/tanpura/g-sharp.ogg', saHz: 207.65 },
+]
+```
+
+By default the player uses one recording for every key, pitch-shifted with
+`playbackRate` and folded by octaves so the shift never exceeds six
+semitones (a tanpura an octave below the singer's Sa is still the right
+drone). This keeps the instrument's character constant as Sa changes. The
+Instrument dropdown offers the other recordings and an "Auto" mode that
+picks the recording nearest the chosen Sa for the least shift. Shifts beyond about ±3 semitones start to sound
+artificial, so aim for recordings spread across the vocal range. The
+current set covers C#3, D#3 and E3; a recording around G#3 or A3 would
+serve female voices without any octave folding.
+
+Before registering a file, run `node scripts/sample-check.mjs <file>` from
+the repo root. It prints the measured Sa to use as `saHz` and lists any
+stretch where the pitch leaves Sa and Pa, which is how talking, handling
+noise or retuning shows up in a drone recording; cut the excerpt to avoid
+those. A spectrogram (`ffmpeg -i file -lavfi showspectrumpic=... out.png`)
+is a good second check: a clean drone is steady horizontal lines with a
+regular pluck pattern, speech is wobbly bands between 300 and 1500 Hz.
+
+Guidelines for a seamless loop:
+
+- Export a loop of at least 20 seconds containing several full pluck cycles.
+- Trim so the loop boundary falls in the sustain, not on a pluck.
+- OGG Vorbis or MP3 at 44.1 kHz or 48 kHz. Keep each file under ~2 MB.
+- The player applies a 0.4 s crossfade at the boundary.
+
+Local playground: `node scripts/fetch-local-tanpura.mjs` builds a gitignored
+`local/` set from the sources in `scripts/local-tanpura-sets.json`, for
+listening and tuning on your own machine only. See the root README.
+
+Licensing: PoC samples from Freesound must be checked per file. Prefer CC0;
+CC-BY requires attribution in the app. Record `LICENSES.md` here listing the
+source and licence of every file before shipping.
+
+Three CC0 recordings are committed; see `LICENSES.md` for sources. The app
+falls back to the synthesized drone only if a sample fails to load.
