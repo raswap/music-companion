@@ -19,6 +19,14 @@ artificial, so aim for recordings spread across the vocal range. The
 current set covers C#3, D#3 and E3; a recording around G#3 or A3 would
 serve female voices without any octave folding.
 
+Before registering a file, run `node scripts/sample-check.mjs <file>` from
+the repo root. It prints the measured Sa to use as `saHz` and lists any
+stretch where the pitch leaves Sa and Pa, which is how talking, handling
+noise or retuning shows up in a drone recording; cut the excerpt to avoid
+those. A spectrogram (`ffmpeg -i file -lavfi showspectrumpic=... out.png`)
+is a good second check: a clean drone is steady horizontal lines with a
+regular pluck pattern, speech is wobbly bands between 300 and 1500 Hz.
+
 Guidelines for a seamless loop:
 
 - Export a loop of at least 20 seconds containing several full pluck cycles.

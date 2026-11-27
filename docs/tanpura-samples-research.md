@@ -39,7 +39,7 @@ locked onto the lowest string an octave below Sa, which is normal.
 
 | ID | Title | Author | Licence | Length | Key (Sa) | Verdict |
 | --- | --- | --- | --- | --- | --- | --- |
-| 153262 | Tanpura 10 | sankalp | CC0 | 2:13 | C#3 +6c | **Shipped.** Acoustic, continuous, bright. Recorded at Tapan music centre, Barcelona |
+| 153262 | Tanpura 10 | sankalp | CC0 | 2:13 | C#3 +3c | **Shipped, 0:09.5 to 0:47.5 only.** Acoustic, bright. Recorded during a tuning demonstration at Tapan music centre, Barcelona: people talk at 0:48 to 0:53 and from 1:28 onwards, and the instrument is retuned after 0:53. The first stretch is uninterrupted |
 | 506312 | Tambura_Eb_fat | Kaczinski | CC0 | 3:09 | D#3 -1c | **Shipped.** Custom 8-string instrument, loud, darker tone, very steady |
 | 148850 | Tanpura in E | iluppai | CC0 | 0:23 | E3 -30c | **Shipped.** Flat tanpura with 5th and 8th, quiet; normalised. Short loop |
 | 153263 | Acoustic Tanpura 4 | sankalp | CC BY 4.0 | 0:38 | C#3 | Good, duplicate key of 153262 |
@@ -74,6 +74,24 @@ the site; asking for permission is worthwhile.
 **Internet Archive, "Tanpura Drone, 12 Pitches"** (Shashank Agrawal, 2016)
 has one 60-minute MP3 per chromatic pitch. No licence field is set, so the
 default is all rights reserved.
+
+## Checking an excerpt for voice
+
+Voice-activity detectors are useless here: WebRTC VAD marks a tanpura as
+100% speech because it is harmonic. Two checks that do work:
+
+1. **Off-string pitch.** Track pitch with short windows, fold each estimate
+   into one octave relative to Sa, and measure the distance to Sa and Pa. A
+   drone folds onto one of the two whatever octave the detector picks;
+   speech lands anywhere. `scripts/sample-check.mjs` does this per 0.5 s
+   block and lists suspicious stretches.
+2. **Spectrogram.** `ffmpeg -i in.mp3 -lavfi "aformat=channel_layouts=mono,showspectrumpic=s=1800x500:scale=log:stop=5000" out.png`.
+   A clean drone is steady horizontal harmonics with a regular pluck
+   pattern; speech is wobbling bands between roughly 300 and 1500 Hz, often
+   with short gaps either side.
+
+The first C# excerpt (0:20 to 1:10) failed both checks at 0:48 to 0:53 and
+was replaced by 0:09.5 to 0:47.5.
 
 ## Processing recipe used
 
