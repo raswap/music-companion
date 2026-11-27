@@ -12,9 +12,12 @@ export const TANPURA_SAMPLES = [
 ```
 
 The player picks the sample whose recorded Sa is nearest the chosen Sa and
-pitch-shifts it with `playbackRate`. Shifts beyond about ±3 semitones start
-to sound artificial, so aim for three or four recordings spread across the
-vocal range rather than one.
+pitch-shifts it with `playbackRate`, folding by octaves so the shift never
+exceeds six semitones (a tanpura an octave below the singer's Sa is still
+the right drone). Shifts beyond about ±3 semitones start to sound
+artificial, so aim for recordings spread across the vocal range. The
+current set covers C#3, D#3 and E3; a recording around G#3 or A3 would
+serve female voices without any octave folding.
 
 Guidelines for a seamless loop:
 
@@ -27,4 +30,5 @@ Licensing: PoC samples from Freesound must be checked per file. Prefer CC0;
 CC-BY requires attribution in the app. Record `LICENSES.md` here listing the
 source and licence of every file before shipping.
 
-No samples are committed yet; the app falls back to a synthesized drone.
+Three CC0 recordings are committed; see `LICENSES.md` for sources. The app
+falls back to the synthesized drone only if a sample fails to load.

@@ -14,8 +14,43 @@ export type FirstString = 'P' | 'm' | 'N'
 
 export interface TanpuraSample {
   url: string
-  /** Frequency of Sa as recorded in the sample. */
+  /** Frequency of madhya Sa as recorded in the sample, measured, not nominal. */
   saHz: number
+  /** Short label for the UI, e.g. "C#3 acoustic". */
+  label?: string
+}
+
+/**
+ * Playback rate that brings a sample recorded at `sampleSaHz` to `targetSaHz`,
+ * folded into the range [1/sqrt(2), sqrt(2)] (within six semitones) by octave
+ * steps. A tanpura an octave below the singer's Sa is still a Sa-Pa drone in
+ * the right key, whereas a seven-semitone pitch shift sounds like a toy.
+ */
+export function playbackRateFor(targetSaHz: number, sampleSaHz: number): number {
+  let rate = targetSaHz / sampleSaHz
+  const upper = Math.SQRT2
+  while (rate > upper) rate /= 2
+  while (rate < 1 / upper) rate *= 2
+  return rate
+}
+
+/** Absolute pitch-shift distance in semitones after octave folding. */
+export function shiftSemitones(targetSaHz: number, sampleSaHz: number): number {
+  return Math.abs(12 * Math.log2(playbackRateFor(targetSaHz, sampleSaHz)))
+}
+
+/** Pick the sample needing the smallest pitch shift, or undefined when none. */
+export function nearestSample<T extends TanpuraSample>(samples: readonly T[], saHz: number): T | undefined {
+  let best: T | undefined
+  let bestShift = Infinity
+  for (const s of samples) {
+    const shift = shiftSemitones(saHz, s.saHz)
+    if (shift < bestShift) {
+      best = s
+      bestShift = shift
+    }
+  }
+  return best
 }
 
 export interface TanpuraOptions {
@@ -40,6 +75,10 @@ export class Tanpura {
   private master: GainNode
   private voice: SampleLoop | SynthDrone | null = null
   private options: TanpuraOptions | null = null
+  /** Incremented on every start/stop so a stale async start cannot add a second voice. */
+  private generation = 0
+  /** True from start() until stop(), including while a sample is still loading. */
+  private active = false
   private readonly ctx: AudioContext
 
   constructor(ctx: AudioContext) {
@@ -60,13 +99,22 @@ export class Tanpura {
 
   async start(options: TanpuraOptions): Promise<void> {
     this.stop()
+    const generation = ++this.generation
+    this.active = true
     this.options = options
 
     let voice: SampleLoop | SynthDrone | null = null
     if (options.sample) {
       try {
         const buffer = await loadAudioBuffer(this.ctx, options.sample.url)
-        voice = new SampleLoop(this.ctx, buffer, options.saHz / options.sample.saHz, options.crossfadeSeconds ?? 0.4)
+        // A newer start() or stop() happened while the sample was loading.
+        if (generation !== this.generation) return
+        voice = new SampleLoop(
+          this.ctx,
+          buffer,
+          playbackRateFor(options.saHz, options.sample.saHz),
+          options.crossfadeSeconds ?? 0.4,
+        )
       } catch (err) {
         console.warn('Tanpura sample failed to load, falling back to synth', err)
       }
@@ -80,6 +128,8 @@ export class Tanpura {
   }
 
   stop(): void {
+    this.generation++
+    this.active = false
     if (!this.voice) return
     const voice = this.voice
     this.voice = null
@@ -104,7 +154,7 @@ export class Tanpura {
       next.firstString !== this.options.firstString ||
       next.sample?.url !== this.options.sample?.url
     this.options = next
-    if (needsRestart && this.voice) await this.start(next)
+    if (needsRestart && this.active) await this.start(next)
     else this.setVolume(next.volume)
   }
 

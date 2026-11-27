@@ -104,6 +104,7 @@ export default function App() {
           onChange={setTanpuraSettings}
           playing={tanpura.playing}
           mode={tanpura.mode}
+          activeSample={tanpura.activeSample}
           error={tanpura.error}
           onStart={tanpura.start}
           onStop={tanpura.stop}
