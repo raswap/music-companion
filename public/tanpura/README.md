@@ -36,6 +36,10 @@ Guidelines for a seamless loop:
 - OGG Vorbis or MP3 at 44.1 kHz or 48 kHz. Keep each file under ~2 MB.
 - The player applies a 0.4 s crossfade at the boundary.
 
+Local playground: `node scripts/fetch-local-tanpura.mjs` builds a gitignored
+`local/` set from the sources in `scripts/local-tanpura-sets.json`, for
+listening and tuning on your own machine only. See the root README.
+
 Licensing: PoC samples from Freesound must be checked per file. Prefer CC0;
 CC-BY requires attribution in the app. Record `LICENSES.md` here listing the
 source and licence of every file before shipping.

@@ -114,6 +114,23 @@ recording (the acoustic C#) for every key by default and offers the others,
 plus a nearest-key "Auto" mode, in an Instrument dropdown. A single
 instrument recorded in three or four keys would remove the trade-off.
 
+## Local playground with the Raga Junglism sets
+
+Both Raga Junglism sets were measured in full (one-minute excerpts, see
+`scripts/sample-check.mjs`). The 2020 Sa-Pa set is exceptionally clean: no
+off-string blocks in any key and every key within 2 cents of equal
+temperament, spanning F#2 to F3. The 2021 Sa-Ma set is similar, within 4
+cents. With twelve keys and octave folding the app never shifts a recording
+by more than half a semitone, which removes the consistency problem
+entirely.
+
+Because no licence is stated they are not committed. `scripts/fetch-local-tanpura.mjs`
+builds them into a gitignored `public/tanpura/local/` folder for private
+development use, and the app loads them from a manifest at startup. Shipping
+them requires written permission from the author; modifying a recording
+(trimming, EQ, pitch shift) does not change that, since the result is a
+derivative of a copyrighted sound recording.
+
 ## Recommendation
 
 Ship the three CC0 recordings now. Record one tanpura around A3 for female

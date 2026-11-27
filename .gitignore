@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local tanpura playground (not licensed for redistribution)
+public/tanpura/local/
+.cache/

@@ -123,6 +123,7 @@ export default function App() {
           playing={tanpura.playing}
           mode={tanpura.mode}
           activeSample={tanpura.activeSample}
+          samples={tanpura.samples}
           error={tanpura.error}
           onStart={tanpura.start}
           onStop={tanpura.stop}

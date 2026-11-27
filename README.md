@@ -61,6 +61,24 @@ Everything that touches `AudioContext` lives in `audio/` and `hooks/`.
 5. `NoteStabilizer` requires a swara to be held for 200 ms before an
    out-of-raga warning fires, so meend and gamak do not trigger false alarms.
 
+## Local tanpura playground
+
+Real multi-key tanpura recordings that are free to listen to but carry no
+redistribution licence (for example the Raga Junglism sets) can be used for
+development on your own machine without committing them:
+
+```bash
+node scripts/fetch-local-tanpura.mjs   # needs ffmpeg
+pnpm dev
+```
+
+The script downloads the first two minutes of each recording listed in
+`scripts/local-tanpura-sets.json`, cuts a normalised excerpt, measures its Sa
+and writes `public/tanpura/local/manifest.json`. That folder is gitignored.
+When the manifest exists the app lists each set in the Instrument dropdown
+and picks the nearest key automatically, so the pitch shift never exceeds
+half a semitone. Do not ship these files: ask the author for a licence first.
+
 ## Privacy
 
 All audio processing happens in the browser. Nothing is recorded or sent to

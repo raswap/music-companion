@@ -1,5 +1,6 @@
 import type { FirstString } from '../audio/tanpura'
-import { AUTO_INSTRUMENT, TANPURA_SAMPLES, type ActiveSample, type TanpuraSettings } from '../hooks/useTanpura'
+import type { TanpuraSample } from '../audio/tanpura'
+import { instrumentOptions, type ActiveSample, type TanpuraSettings } from '../hooks/useTanpura'
 
 interface Props {
   settings: TanpuraSettings
@@ -7,6 +8,7 @@ interface Props {
   playing: boolean
   mode: 'sample' | 'synth' | null
   activeSample: ActiveSample | null
+  samples: readonly TanpuraSample[]
   error: string | null
   onStart: () => void
   onStop: () => void
@@ -24,7 +26,9 @@ function shiftLabel(semitones: number): string {
   return `${semitones > 0 ? 'up' : 'down'} ${n} semitone${n === '1' ? '' : 's'}`
 }
 
-export function TanpuraControls({ settings, onChange, playing, mode, activeSample, error, onStart, onStop }: Props) {
+export function TanpuraControls({ settings, onChange, playing, mode, activeSample, samples, error, onStart, onStop }: Props) {
+  const options = instrumentOptions(samples)
+  const known = options.some((o) => o.value === settings.instrument)
   return (
     <section className="panel" aria-labelledby="tanpura-heading">
       <h2 id="tanpura-heading">Tanpura</h2>
@@ -34,22 +38,23 @@ export function TanpuraControls({ settings, onChange, playing, mode, activeSampl
         </button>
         {mode === 'synth' && <span className="hint">synthesized drone (sample unavailable)</span>}
         {mode === 'sample' && activeSample && (
-          <span className="hint">{shiftLabel(activeSample.shiftSemitones)}</span>
+          <span className="hint">
+            {activeSample.label}, {shiftLabel(activeSample.shiftSemitones)}
+          </span>
         )}
       </div>
       <label>
         Instrument
         <select
           id="tanpura-instrument"
-          value={settings.instrument}
+          value={known ? settings.instrument : 'auto'}
           onChange={(e) => onChange({ ...settings, instrument: e.target.value })}
         >
-          {TANPURA_SAMPLES.map((s) => (
-            <option key={s.url} value={s.url}>
-              {s.label}
+          {options.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
             </option>
           ))}
-          <option value={AUTO_INSTRUMENT}>Auto: nearest recording to my Sa</option>
         </select>
       </label>
       <fieldset className="row">
@@ -67,6 +72,18 @@ export function TanpuraControls({ settings, onChange, playing, mode, activeSampl
           </label>
         ))}
       </fieldset>
+      <label>
+        Brightness <span className="mono">{settings.brightness > 0 ? '+' : ''}{settings.brightness} dB</span>
+        <input
+          id="tanpura-brightness"
+          type="range"
+          min={-18}
+          max={6}
+          step={1}
+          value={settings.brightness}
+          onChange={(e) => onChange({ ...settings, brightness: Number(e.target.value) })}
+        />
+      </label>
       <label>
         Volume
         <input

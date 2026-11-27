@@ -18,6 +18,11 @@ export interface TanpuraSample {
   saHz: number
   /** Short label for the UI, e.g. "C#3 acoustic". */
   label?: string
+  /** Recordings of one instrument in several keys share a set id. */
+  set?: string
+  setLabel?: string
+  /** Which string the first (leftmost) string is tuned to in this recording. */
+  firstString?: FirstString
 }
 
 /**
@@ -62,6 +67,8 @@ export interface TanpuraOptions {
   sample?: TanpuraSample
   /** Crossfade length in seconds for sample looping. */
   crossfadeSeconds?: number
+  /** High-shelf gain in dB above 2.5 kHz, -18..+6. 0 is flat. */
+  brightness?: number
 }
 
 /** Ratio of the first (leftmost) string relative to madhya Sa; all are mandra. */
@@ -73,6 +80,7 @@ const FIRST_STRING_RATIO: Record<FirstString, number> = {
 
 export class Tanpura {
   private master: GainNode
+  private tone: BiquadFilterNode
   private voice: SampleLoop | SynthDrone | null = null
   private options: TanpuraOptions | null = null
   /** Incremented on every start/stop so a stale async start cannot add a second voice. */
@@ -85,7 +93,17 @@ export class Tanpura {
     this.ctx = ctx
     this.master = ctx.createGain()
     this.master.gain.value = 0
-    this.master.connect(ctx.destination)
+    this.tone = ctx.createBiquadFilter()
+    this.tone.type = 'highshelf'
+    this.tone.frequency.value = 2500
+    this.tone.gain.value = 0
+    this.master.connect(this.tone)
+    this.tone.connect(ctx.destination)
+  }
+
+  setBrightness(db: number): void {
+    if (this.options) this.options.brightness = db
+    this.tone.gain.setTargetAtTime(db, this.ctx.currentTime, 0.05)
   }
 
   get playing(): boolean {
@@ -124,6 +142,7 @@ export class Tanpura {
     voice.output.connect(this.master)
     voice.start()
     this.voice = voice
+    this.setBrightness(options.brightness ?? 0)
     this.fadeTo(options.volume, 0.5)
   }
 
@@ -155,7 +174,10 @@ export class Tanpura {
       next.sample?.url !== this.options.sample?.url
     this.options = next
     if (needsRestart && this.active) await this.start(next)
-    else this.setVolume(next.volume)
+    else {
+      this.setVolume(next.volume)
+      this.setBrightness(next.brightness ?? 0)
+    }
   }
 
   private fadeTo(value: number, seconds: number): void {
