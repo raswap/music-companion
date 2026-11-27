@@ -5,9 +5,14 @@ import { Tanpura, nearestSample, playbackRateFor, type FirstString, type Tanpura
 export interface TanpuraSettings {
   firstString: FirstString
   volume: number
+  /**
+   * Which recording to use: a sample url for one instrument across all keys
+   * (consistent timbre, up to six semitones of pitch shift) or 'auto' to pick
+   * the recording nearest the chosen Sa (least shift, but the instrument
+   * changes with the key).
+   */
+  instrument: string
 }
-
-export const DEFAULT_TANPURA: TanpuraSettings = { firstString: 'P', volume: 0.7 }
 
 /**
  * Recorded loops in public/tanpura/. `saHz` is the measured madhya Sa of each
@@ -16,12 +21,24 @@ export const DEFAULT_TANPURA: TanpuraSettings = { firstString: 'P', volume: 0.7 
  * With no entries the synthesized drone is used.
  */
 export const TANPURA_SAMPLES: readonly TanpuraSample[] = [
-  { url: '/tanpura/tanpura-cs3-sankalp.mp3', saHz: 138.8, label: 'C#3 acoustic' },
-  { url: '/tanpura/tanpura-ds3-kaczinski.mp3', saHz: 155.4, label: 'D#3 acoustic' },
-  { url: '/tanpura/tanpura-e3-iluppai.mp3', saHz: 161.9, label: 'E3 acoustic' },
+  { url: '/tanpura/tanpura-cs3-sankalp.mp3', saHz: 138.8, label: 'Acoustic tanpura (recorded in C#)' },
+  { url: '/tanpura/tanpura-ds3-kaczinski.mp3', saHz: 155.4, label: '8-string tambura (recorded in D#)' },
+  { url: '/tanpura/tanpura-e3-iluppai.mp3', saHz: 161.9, label: 'Flat tanpura (recorded in E)' },
 ]
 
-function pickSample(saHz: number): TanpuraSample | undefined {
+export const AUTO_INSTRUMENT = 'auto'
+
+export const DEFAULT_TANPURA: TanpuraSettings = {
+  firstString: 'P',
+  volume: 0.7,
+  instrument: TANPURA_SAMPLES[0].url,
+}
+
+export function pickSample(saHz: number, instrument: string): TanpuraSample | undefined {
+  if (instrument !== AUTO_INSTRUMENT) {
+    const fixed = TANPURA_SAMPLES.find((s) => s.url === instrument)
+    if (fixed) return fixed
+  }
   return nearestSample(TANPURA_SAMPLES, saHz)
 }
 
@@ -54,16 +71,18 @@ export function useTanpura(saHz: number, settings: TanpuraSettings) {
         saHz,
         firstString: settings.firstString,
         volume: settings.volume,
-        sample: pickSample(saHz),
+        sample: pickSample(saHz, settings.instrument),
       })
       setMode(tanpuraRef.current.mode)
-      setActiveSample(tanpuraRef.current.mode === 'sample' ? describeSample(pickSample(saHz), saHz) : null)
+      setActiveSample(
+        tanpuraRef.current.mode === 'sample' ? describeSample(pickSample(saHz, settings.instrument), saHz) : null,
+      )
       setPlaying(true)
       setError(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     }
-  }, [saHz, settings.firstString, settings.volume])
+  }, [saHz, settings.firstString, settings.volume, settings.instrument])
 
   const stop = useCallback(() => {
     tanpuraRef.current?.stop()
@@ -78,17 +97,22 @@ export function useTanpura(saHz: number, settings: TanpuraSettings) {
     if (!playing || !tanpuraRef.current) return
     let cancelled = false
     void tanpuraRef.current
-      .update({ saHz, firstString: settings.firstString, volume: settings.volume, sample: pickSample(saHz) })
+      .update({
+        saHz,
+        firstString: settings.firstString,
+        volume: settings.volume,
+        sample: pickSample(saHz, settings.instrument),
+      })
       .then(() => {
         if (cancelled) return
         const m = tanpuraRef.current?.mode ?? null
         setMode(m)
-        setActiveSample(m === 'sample' ? describeSample(pickSample(saHz), saHz) : null)
+        setActiveSample(m === 'sample' ? describeSample(pickSample(saHz, settings.instrument), saHz) : null)
       })
     return () => {
       cancelled = true
     }
-  }, [playing, saHz, settings.firstString, settings.volume])
+  }, [playing, saHz, settings.firstString, settings.volume, settings.instrument])
 
   useEffect(() => () => tanpuraRef.current?.stop(), [])
 

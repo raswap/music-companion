@@ -17,6 +17,16 @@ import { DEFAULT_SA, saToHz, type SaSetting } from './music/sa'
 import type { SwaraId } from './music/swaras'
 
 const RAGA_STORAGE_KEY = 'music-companion.raga'
+const TANPURA_STORAGE_KEY = 'music-companion.tanpura'
+
+function loadSavedTanpura(): TanpuraSettings {
+  try {
+    const saved = JSON.parse(localStorage.getItem(TANPURA_STORAGE_KEY) ?? 'null') as Partial<TanpuraSettings> | null
+    return { ...DEFAULT_TANPURA, ...saved }
+  } catch {
+    return DEFAULT_TANPURA
+  }
+}
 
 function loadSavedRaga(): Raga {
   try {
@@ -37,7 +47,15 @@ export default function App() {
     }
   }
   const [sa, setSa] = useState<SaSetting>(DEFAULT_SA)
-  const [tanpuraSettings, setTanpuraSettings] = useState<TanpuraSettings>(DEFAULT_TANPURA)
+  const [tanpuraSettings, setTanpuraSettingsState] = useState<TanpuraSettings>(loadSavedTanpura)
+  const setTanpuraSettings = (next: TanpuraSettings) => {
+    setTanpuraSettingsState(next)
+    try {
+      localStorage.setItem(TANPURA_STORAGE_KEY, JSON.stringify(next))
+    } catch {
+      /* settings last for this page load */
+    }
+  }
   const saHz = useMemo(() => saToHz(sa), [sa])
 
   const pitch = usePitch(saHz)

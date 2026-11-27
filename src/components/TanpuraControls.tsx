@@ -1,5 +1,5 @@
 import type { FirstString } from '../audio/tanpura'
-import type { ActiveSample, TanpuraSettings } from '../hooks/useTanpura'
+import { AUTO_INSTRUMENT, TANPURA_SAMPLES, type ActiveSample, type TanpuraSettings } from '../hooks/useTanpura'
 
 interface Props {
   settings: TanpuraSettings
@@ -34,11 +34,24 @@ export function TanpuraControls({ settings, onChange, playing, mode, activeSampl
         </button>
         {mode === 'synth' && <span className="hint">synthesized drone (sample unavailable)</span>}
         {mode === 'sample' && activeSample && (
-          <span className="hint">
-            {activeSample.label} recording, {shiftLabel(activeSample.shiftSemitones)}
-          </span>
+          <span className="hint">{shiftLabel(activeSample.shiftSemitones)}</span>
         )}
       </div>
+      <label>
+        Instrument
+        <select
+          id="tanpura-instrument"
+          value={settings.instrument}
+          onChange={(e) => onChange({ ...settings, instrument: e.target.value })}
+        >
+          {TANPURA_SAMPLES.map((s) => (
+            <option key={s.url} value={s.url}>
+              {s.label}
+            </option>
+          ))}
+          <option value={AUTO_INSTRUMENT}>Auto: nearest recording to my Sa</option>
+        </select>
+      </label>
       <fieldset className="row">
         <legend>First string</legend>
         {FIRST_STRINGS.map((s) => (

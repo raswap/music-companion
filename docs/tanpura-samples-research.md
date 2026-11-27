@@ -105,6 +105,15 @@ Then measure Sa on the output with the app's detector and record it as
 `saHz` in `src/hooks/useTanpura.ts`. The player crossfades 0.4 s at the loop
 boundary, so cuts only need to avoid landing on a pluck.
 
+## Consistency across keys
+
+The three shipped recordings are three different instruments and sound
+noticeably different from each other. Switching between them as Sa changes
+is more distracting than a few semitones of pitch shift, so the app uses one
+recording (the acoustic C#) for every key by default and offers the others,
+plus a nearest-key "Auto" mode, in an Instrument dropdown. A single
+instrument recorded in three or four keys would remove the trade-off.
+
 ## Recommendation
 
 Ship the three CC0 recordings now. Record one tanpura around A3 for female

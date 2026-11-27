@@ -11,10 +11,12 @@ export const TANPURA_SAMPLES = [
 ]
 ```
 
-The player picks the sample whose recorded Sa is nearest the chosen Sa and
-pitch-shifts it with `playbackRate`, folding by octaves so the shift never
-exceeds six semitones (a tanpura an octave below the singer's Sa is still
-the right drone). Shifts beyond about ±3 semitones start to sound
+By default the player uses one recording for every key, pitch-shifted with
+`playbackRate` and folded by octaves so the shift never exceeds six
+semitones (a tanpura an octave below the singer's Sa is still the right
+drone). This keeps the instrument's character constant as Sa changes. The
+Instrument dropdown offers the other recordings and an "Auto" mode that
+picks the recording nearest the chosen Sa for the least shift. Shifts beyond about ±3 semitones start to sound
 artificial, so aim for recordings spread across the vocal range. The
 current set covers C#3, D#3 and E3; a recording around G#3 or A3 would
 serve female voices without any octave folding.
