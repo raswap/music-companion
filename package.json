@@ -4,6 +4,10 @@
   "version": "0.1.0",
   "type": "module",
   "description": "Practice companion for Hindustani classical vocal students: tanpura drone, real-time swara detection and raga feedback.",
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

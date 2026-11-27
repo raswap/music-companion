@@ -18,8 +18,8 @@ See [docs/PRD.md](docs/PRD.md) for the full product requirements.
 ## Getting started
 
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 Open the printed URL in Chrome, Safari or Firefox. Press **Start listening**
@@ -28,10 +28,10 @@ and allow microphone access. Press **Play** under Tanpura for the drone.
 Other scripts:
 
 ```bash
-npm test          # unit tests
-npm run typecheck # tsc
-npm run lint      # oxlint
-npm run build     # production build to dist/
+pnpm test          # unit tests
+pnpm typecheck     # tsc
+pnpm lint          # oxlint
+pnpm build         # production build to dist/
 ```
 
 ## Project layout
