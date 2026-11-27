@@ -176,3 +176,7 @@
   background: var(--accent);
   transition: width 60ms linear;
 }
+
+.mic-selector select {
+  max-width: 100%;
+}

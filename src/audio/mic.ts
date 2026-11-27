@@ -8,6 +8,26 @@ export type FrameHandler = (frame: Float32Array, sampleRate: number, time: numbe
 export interface MicrophoneOptions extends CaptureProcessorOptions {
   /** Pass through to getUserMedia. Defaults disable browser DSP, which distorts pitch. */
   constraints?: MediaTrackConstraints
+  /** Specific input device. Omit for the browser default. */
+  deviceId?: string
+}
+
+export interface MicrophoneDevice {
+  deviceId: string
+  label: string
+}
+
+/**
+ * Input devices the browser offers. Labels are only populated once the page
+ * has been granted microphone access at least once, so call this after a
+ * successful `start()` or on a `devicechange` event.
+ */
+export async function listMicrophones(): Promise<MicrophoneDevice[]> {
+  if (!navigator.mediaDevices?.enumerateDevices) return []
+  const devices = await navigator.mediaDevices.enumerateDevices()
+  return devices
+    .filter((d) => d.kind === 'audioinput')
+    .map((d, i) => ({ deviceId: d.deviceId, label: d.label || `Microphone ${i + 1}` }))
 }
 
 const DEFAULT_OPTIONS: MicrophoneOptions = {
@@ -48,6 +68,8 @@ export class MicrophoneInput {
   private source: MediaStreamAudioSourceNode | null = null
   private worklet: AudioWorkletNode | null = null
   private sink: GainNode | null = null
+  /** Label of the device actually opened, once started. */
+  activeLabel: string | null = null
   private static moduleLoaded = new WeakSet<AudioContext>()
   private readonly ctx: AudioContext
   private readonly options: MicrophoneOptions
@@ -79,14 +101,14 @@ export class MicrophoneInput {
       MicrophoneInput.moduleLoaded.add(this.ctx)
     }
 
+    const audio: MediaTrackConstraints = { ...DEFAULT_OPTIONS.constraints, ...this.options.constraints }
+    if (this.options.deviceId) audio.deviceId = { exact: this.options.deviceId }
     try {
-      this.stream = await navigator.mediaDevices.getUserMedia({
-        audio: { ...DEFAULT_OPTIONS.constraints, ...this.options.constraints },
-        video: false,
-      })
+      this.stream = await navigator.mediaDevices.getUserMedia({ audio, video: false })
     } catch (err) {
       throw new Error(describeMicrophoneError(err))
     }
+    this.activeLabel = this.stream.getAudioTracks()[0]?.label ?? null
 
     this.source = this.ctx.createMediaStreamSource(this.stream)
     this.worklet = new AudioWorkletNode(this.ctx, 'capture-processor', {
@@ -117,6 +139,7 @@ export class MicrophoneInput {
     this.source?.disconnect()
     this.sink?.disconnect()
     this.stream?.getTracks().forEach((t) => t.stop())
+    this.activeLabel = null
     this.worklet = null
     this.source = null
     this.sink = null

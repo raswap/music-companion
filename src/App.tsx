@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
 import { CentsMeter } from './components/CentsMeter'
 import { InputLevel } from './components/InputLevel'
+import { MicSelector } from './components/MicSelector'
 import { PitchTape } from './components/PitchTape'
 import { RagaAlert } from './components/RagaAlert'
 import { SaSelector } from './components/SaSelector'
@@ -59,6 +60,13 @@ export default function App() {
           </button>
           {pitch.listening && <InputLevel level={pitch.level} />}
         </div>
+        <MicSelector
+          devices={pitch.devices}
+          deviceId={pitch.deviceId}
+          activeDevice={pitch.activeDevice}
+          listening={pitch.listening}
+          onChange={(id) => void pitch.setDeviceId(id)}
+        />
         {pitch.error && <p className="error">{pitch.error}</p>}
       </section>
 
